@@ -1,17 +1,19 @@
 # Requirements
 
-* symfony cli
+* Symfony CLI
 * php 8
-* posgres database
+* PostgreSQL database
 * composer
 
 # How to run localy
 
 ```
 git clone https://github.com/aleksandrgilarov/homework.git
-copy .env.dist to .env and enter your api keys and change DB connection string
 ```
+
 cd to the project directory
+copy .env.dist to .env and enter your api keys and change DB connection string
+
 ```
 composer install
 ```
