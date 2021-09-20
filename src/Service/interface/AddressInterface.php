@@ -2,11 +2,13 @@
 
 namespace App\Service\interface;
 
+use App\Entity\IpLocation;
+
 interface AddressInterface
 {
     /**
      * @param string $ip
-     * @return array|null
+     * @return IpLocation|null
      */
-    public function getAddressByIp(string $ip): ?array;
+    public function getLocationByIp(string $ip): ?IpLocation;
 }

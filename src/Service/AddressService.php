@@ -2,7 +2,10 @@
 
 namespace App\Service;
 
+use App\Entity\IpLocation;
+use App\Repository\IpLocationRepository;
 use App\Service\interface\AddressInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
@@ -15,6 +18,8 @@ class AddressService implements AddressInterface
         private HttpClientInterface $client,
         private ParameterBagInterface $parameterBag,
         private LoggerInterface $logger,
+        private EntityManagerInterface $entityManager,
+        private IpLocationRepository $ipRepo,
     )
     {
     }
@@ -22,25 +27,43 @@ class AddressService implements AddressInterface
     /**
      * Return address coordinates by IP address
      */
-    public function getAddressByIp($ip): ?array
+    public function getLocationByIp($ip): ?IpLocation
     {
-        try {
-            return  $this->client
-                ->request(
-                    'GET',
-                    $this->parameterBag->get('address_api_url') . $ip,
-                    [
-                        'query' => [
-                            'access_key' => $this->parameterBag->get('address_api_key'),
-                            'fields' => 'city,country_code'
+        $address = $this->ipRepo->findOneByIp($ip);
+        if (!$address) {
+            try {
+                $response = $this->client
+                    ->request(
+                        'GET',
+                        $this->parameterBag->get('address_api_url') . $ip,
+                        [
+                            'query' => [
+                                'access_key' => $this->parameterBag->get('address_api_key'),
+                                'fields' => 'city,country_code'
+                            ]
                         ]
-                    ]
-                )->toArray();
-        } catch (TransportExceptionInterface $e) {
-            $this->logger->alert($e->getMessage());
+                    )->toArray();
 
-            return null;
+                return $this->saveIpLocation($ip, $response);
+            } catch (TransportExceptionInterface $e) {
+                $this->logger->alert($e->getMessage());
+
+                return null;
+            }
         }
+        return $address;
+    }
 
+    private function saveIpLocation(string $ip, array $location): IpLocation
+    {
+        $ipLocation = new IpLocation();
+        $ipLocation->setIp($ip);
+        $ipLocation->setCity($location['city']);
+        $ipLocation->setCountry($location['country_code']);
+
+        $this->entityManager->persist($ipLocation);
+        $this->entityManager->flush();
+
+        return $ipLocation;
     }
 }

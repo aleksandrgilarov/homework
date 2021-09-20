@@ -19,7 +19,7 @@ class OpenWeatherService implements WeatherInterface
     {
     }
 
-    public function getAddressWeatherData(array $address): ?array
+    public function getAddressWeatherData($address): ?array
     {
         try {
             return  $this->client
@@ -28,7 +28,7 @@ class OpenWeatherService implements WeatherInterface
                     $this->parameterBag->get('weather_api_url') . 'weather',
                     [
                         'query' => [
-                            'q' => $address['city'] . ',' . $address['country_code'],
+                            'q' => $address->getCity() . ',' . $address->getCountry(),
                             'units' => 'metric',
                             'appid' => $this->parameterBag->get('weather_api_key')
                         ]

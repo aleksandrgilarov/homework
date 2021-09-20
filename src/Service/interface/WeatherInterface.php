@@ -2,11 +2,13 @@
 
 namespace App\Service\interface;
 
+use App\Entity\IpLocation;
+
 interface WeatherInterface
 {
     /**
-     * @param array $address
+     * @param IpLocation $address
      * @return array|null
      */
-    public function getAddressWeatherData(array $address): ?array;
+    public function getAddressWeatherData(IpLocation $address): ?array;
 }

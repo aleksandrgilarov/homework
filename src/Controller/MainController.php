@@ -29,13 +29,13 @@ class MainController extends AbstractController
     public function main(): Response
     {
         $ip = $this->ipService->getIp();
-        $addressData = $this->addressService->getAddressByIp($ip);
+        $addressData = $this->addressService->getLocationByIp($ip);
 
         if (!$addressData) {
             return new Response("Oops, something went wrong :(", Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $cacheKey = implode('_', $addressData);
+        $cacheKey = $addressData->getIp() . '_' . $addressData->getCity() . '_' . $addressData->getCountry();
 
         $weather = $this->cache->getItem($cacheKey);
 
@@ -50,7 +50,8 @@ class MainController extends AbstractController
     #[Route("/nocache", name: "nocache")]
     public function nocache(): Response
     {
-        $addressData = $this->addressService->getAddressWithIp();
-        return $this->json($this->openWeatherService->getWeatherDataByCoordinates($addressData));
+        $ip = $this->ipService->getIp();
+        $addressData = $this->addressService->getLocationByIp($ip);
+        return $this->json($this->openWeatherService->getAddressWeatherData($addressData));
     }
 }
