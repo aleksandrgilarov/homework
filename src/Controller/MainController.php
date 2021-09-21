@@ -5,16 +5,17 @@ namespace App\Controller;
 use App\Service\interface\AddressInterface;
 use App\Service\interface\IpInterface;
 use App\Service\interface\WeatherInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class MainController extends AbstractController
 {
-    private $cache;
+    /**
+     * @var FilesystemAdapter
+     */
+    private FilesystemAdapter $cache;
 
     public function __construct(
         private AddressInterface $addressService,
@@ -29,6 +30,11 @@ class MainController extends AbstractController
     public function main(): Response
     {
         $ip = $this->ipService->getIp();
+
+        if (!$ip) {
+            return new Response("Oops, something went wrong :(", Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $addressData = $this->addressService->getLocationByIp($ip);
 
         if (!$addressData) {
@@ -51,7 +57,17 @@ class MainController extends AbstractController
     public function nocache(): Response
     {
         $ip = $this->ipService->getIp();
+
+        if (!$ip) {
+            return new Response("Oops, something went wrong :(", Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $addressData = $this->addressService->getLocationByIp($ip);
+
+        if (!$addressData) {
+            return new Response("Oops, something went wrong :(", Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         return $this->json($this->openWeatherService->getAddressWeatherData($addressData));
     }
 }

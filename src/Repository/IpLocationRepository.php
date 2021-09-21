@@ -19,15 +19,12 @@ class IpLocationRepository extends ServiceEntityRepository
         parent::__construct($registry, IpLocation::class);
     }
 
-
     public function findOneByIp($ip): ?IpLocation
     {
         return $this->createQueryBuilder('i')
             ->andWhere('i.ip = :val')
             ->setParameter('val', $ip)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
     }
-
 }
