@@ -19,7 +19,7 @@ class IpService implements IpInterface
     {
     }
 
-    public function getIp(): string
+    public function getIp(): ?string
     {
         try {
             return $this->client->request(
@@ -29,7 +29,7 @@ class IpService implements IpInterface
         } catch (TransportExceptionInterface $e) {
             $this->logger->alert($e->getMessage());
 
-            return 'An error occured when getting the public IP of the server.';
+            return null;
         }
     }
 }
